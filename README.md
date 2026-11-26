@@ -208,6 +208,3 @@ The `/health` response reports whether tracing is configured; it does not expose
 - Re-indexing a file with the same `source` filename first removes its old points, then writes the new chunks. Use distinct source filenames if you intend to keep two separate versions.
 - `MIN_RELEVANCE_SCORE=0.18` is a starting threshold, not a universal value. Tune it using your evaluation questions and observed reranker scores.
 - Existing indexed points are not automatically deleted by this update. Re-upload/re-index a document to replace that source's points.
-resume
-
-https://drive.google.com/file/d/1s0CVNEmnsF7dE00zdPAKxD69Yxbp4rgc/view?usp=drive_link
