@@ -665,3 +665,5 @@ Together, these tracks establish a reliable foundation for an accurate, scalable
 **Interpretation:** These are recorded smoke-test results, not a semantic accuracy benchmark. Token-overlap metrics do not establish factual correctness or faithfulness. Retrieval metrics were not calculated because relevant chunk IDs had not been labelled.
 
 </details>
+
+resume :https://drive.google.com/file/d/13C9XJDfzTywamtTJ1PXXgIy_MknUZ6f-/view?usp=sharing
