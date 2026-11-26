@@ -425,3 +425,220 @@ It should automatically:
 8. Compare dense-only, BM25-only, and hybrid retrieval.
 
 **Final objective:** Turn MiniRAG from a working document chatbot into an evaluated, measurable, reliable RAG system.
+
+
+# MiniRAG — Clear Schema, Track A and Track B
+
+## 1. Clear Schema (Project Architecture)
+
+MiniRAG follows a modular Retrieval-Augmented Generation (RAG) architecture. Each component has a clearly defined responsibility.
+
+### End-to-End Workflow
+
+Document Upload → Document Parsing → Text Cleaning → Chunking → Metadata Extraction → Embedding Generation → Qdrant Storage → Query Processing → Hybrid Retrieval → Reranking → Context Preparation → Groq LLM → Answer Generation → Citation Validation → Response
+
+### Component Responsibilities
+
+| Component | Responsibility |
+|---|---|
+| Streamlit / Gradio | User interface and document upload |
+| FastAPI | Backend API and request handling |
+| Document Parser | Extract text from PDF and supported files |
+| Chunking Module | Split documents into manageable text segments |
+| Metadata Module | Store source filename, page number, and chunk ID |
+| Embedding Model | Convert text into vector representations |
+| Qdrant | Store and retrieve document vectors |
+| BM25 | Retrieve documents using keyword matching |
+| RRF | Combine dense and keyword retrieval rankings |
+| Cohere Reranker | Reorder retrieved chunks by relevance |
+| Groq LLM | Generate answers from retrieved context |
+| Citation Validator | Validate source and page references |
+| LangSmith | Trace and monitor application execution |
+
+### Data Schema
+
+**Document Schema**
+
+- document_id: Unique document identifier
+- filename: Original document filename
+- file_type: Document format
+- uploaded_at: Upload timestamp
+- status: Processing status
+
+**Chunk Schema**
+
+- chunk_id: Unique chunk identifier
+- document_id: Parent document identifier
+- source: Original filename
+- page_number: Physical PDF page number
+- chunk_index: Position within the document
+- text: Extracted chunk content
+- embedding: Vector representation
+- metadata: Additional document information
+
+**Query Schema**
+
+- query_id: Unique query identifier
+- question: User question
+- source: Optional document filter
+- top_k: Number of retrieval candidates
+- retrieved_chunks: Retrieved evidence
+- reranked_chunks: Reranked evidence
+- answer: Generated response
+- citations: Source and page references
+- latency_ms: End-to-end response time
+
+---
+
+## 2. Track A — Clear Schema and Data Pipeline
+
+**Objective:** Ensure that document ingestion, metadata, storage, and retrieval follow a consistent structure.
+
+### Track A Tasks
+
+1. Define document and chunk schemas.
+2. Implement document parsing.
+3. Implement text cleaning and normalization.
+4. Implement configurable chunking.
+5. Preserve page numbers and source metadata.
+6. Generate embeddings using a consistent model.
+7. Store vectors and metadata in Qdrant.
+8. Implement document-level filtering.
+9. Validate metadata during ingestion.
+10. Add duplicate document detection.
+
+### Track A Deliverables
+
+- Document schema.
+- Chunk schema.
+- Metadata validation.
+- Consistent ingestion pipeline.
+- Qdrant collection configuration.
+- Document-level retrieval.
+- Ingestion error handling.
+
+### Track A Success Criteria
+
+- Every chunk has a valid chunk ID.
+- Every chunk has a source filename.
+- Page metadata is preserved.
+- Embedding dimensions are consistent.
+- Retrieval returns the correct source document.
+- Re-ingestion does not silently create unwanted duplicates.
+
+---
+
+## 3. Track B — Index Configuration and Retrieval Optimization
+
+**Objective:** Configure and optimize indexing and retrieval so MiniRAG retrieves relevant evidence accurately and efficiently.
+
+### Track B Tasks
+
+**A. Embedding Configuration**
+
+- Configure embedding provider.
+- Configure embedding model.
+- Record embedding dimensions.
+- Ensure query and document embeddings use the same model.
+- Re-index documents if the embedding model changes.
+
+**B. Qdrant Index Configuration**
+
+- Define collection name.
+- Configure vector dimensions.
+- Configure distance metric, such as cosine similarity.
+- Configure payload indexes for frequently filtered metadata.
+- Configure storage and retrieval settings.
+- Validate collection compatibility before ingestion.
+
+**C. Retrieval Configuration**
+
+- Configure dense retrieval top-k.
+- Configure BM25 retrieval top-k.
+- Combine rankings using Reciprocal Rank Fusion (RRF).
+- Configure source filtering.
+- Remove duplicate chunks.
+- Return retrieval scores and diagnostic information.
+
+**D. Reranking Configuration**
+
+- Configure Cohere reranker.
+- Define candidate count.
+- Define final context count.
+- Compare retrieval rankings before and after reranking.
+- Measure reranking latency and API usage.
+
+**E. Generation Configuration**
+
+- Configure Groq model.
+- Set temperature.
+- Set maximum output tokens.
+- Define grounding instructions.
+- Require citations for factual answers.
+- Return an insufficient-evidence response when necessary.
+
+### Track B Configuration Table
+
+| Setting | Configuration |
+|---|---|
+| Vector database | Qdrant |
+| Embedding provider | Local or configured provider |
+| Embedding model | Configurable |
+| Vector dimension | Must match embedding model |
+| Distance metric | Cosine |
+| Keyword retrieval | BM25 |
+| Hybrid fusion | RRF |
+| Reranker | Cohere |
+| LLM provider | Groq |
+| Tracing | LangSmith |
+| Retrieval top-k | Configurable |
+| Reranking top-k | Configurable |
+| Final context count | Configurable |
+
+### Track B Success Criteria
+
+- Dense retrieval returns semantically relevant chunks.
+- BM25 retrieves exact technical terms.
+- Hybrid retrieval improves retrieval coverage.
+- Reranking improves the ordering of relevant chunks.
+- Source filtering returns only the requested document.
+- Embedding configuration remains consistent between indexing and querying.
+- Retrieval and generation latency are measured separately.
+
+---
+
+## 4. Track A vs Track B
+
+| Area | Track A | Track B |
+|---|---|---|
+| Main focus | Data and schema consistency | Indexing and retrieval configuration |
+| Document parsing | Yes | No |
+| Chunking | Yes | Configuration impact |
+| Metadata | Yes | Metadata filtering |
+| Embeddings | Generate and store | Configure and validate |
+| Qdrant | Store documents | Configure indexes and search |
+| BM25 | No | Yes |
+| RRF | No | Yes |
+| Cohere reranking | No | Yes |
+| Main output | Reliable document data | Relevant retrieved evidence |
+
+## 5. Recommended Execution Order
+
+1. Complete Track A schemas and ingestion validation.
+2. Verify Qdrant document and chunk metadata.
+3. Complete Track B embedding and collection configuration.
+4. Implement dense retrieval.
+5. Implement BM25 retrieval.
+6. Implement RRF hybrid retrieval.
+7. Integrate Cohere reranking.
+8. Add source filtering.
+9. Validate citations and page numbers.
+10. Run retrieval evaluation and latency benchmarks.
+
+## Final Objective
+
+**Track A ensures that MiniRAG stores clean, structured, traceable document data.**
+
+**Track B ensures that MiniRAG indexes that data correctly and retrieves the most relevant evidence for each question.**
+
+Together, these tracks establish a reliable foundation for an accurate, scalable, and production-ready MiniRAG system.
