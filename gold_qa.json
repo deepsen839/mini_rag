@@ -1,0 +1,7 @@
+[
+  {"question":"What are the four request states?","expected_terms":["New","In Progress","Waiting","Resolved"],"expected_source":"product_handbook.txt"},
+  {"question":"What is the standard response target?","expected_terms":["four business hours"],"expected_source":"product_handbook.txt"},
+  {"question":"How long are audit events retained?","expected_terms":["365 days"],"expected_source":"product_handbook.txt"},
+  {"question":"What must a waiting request contain?","expected_terms":["reason","next-review date"],"expected_source":"product_handbook.txt"},
+  {"question":"How often should webhook secrets be rotated?","expected_terms":["90 days"],"expected_source":"product_handbook.txt"}
+]

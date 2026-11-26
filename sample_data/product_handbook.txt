@@ -1,0 +1,19 @@
+Mini RAG Demo Product Handbook
+
+Product overview
+ProcessVenue Demo is a fictional workflow platform used to demonstrate document-grounded question answering. It helps small operations teams organize requests, assign owners, and monitor service-level targets. The platform is not a real commercial product.
+
+Access and roles
+There are three roles: Viewer, Editor, and Administrator. Viewers can search and read records. Editors can create and update records assigned to their workspace. Administrators can manage users, permissions, and workspace settings. Multi-factor authentication is required for administrator accounts.
+
+Request lifecycle
+A request moves through four states: New, In Progress, Waiting, and Resolved. A team lead assigns an owner when a request enters In Progress. Waiting requests must include a reason and a next-review date. A request can be marked Resolved only after the owner records the resolution summary.
+
+Service targets
+The standard response target is four business hours. The standard resolution target is two business days. Priority-one incidents have a 30-minute response target and an eight-hour resolution target. The service clock pauses while a request is in Waiting because the team is blocked on information from the requester.
+
+Data retention and privacy
+Audit events are retained for 365 days. Deleted records remain in a recoverable state for 30 days before permanent deletion. The demo handbook contains no real customer personal data. Access should follow least-privilege principles and users should not share credentials.
+
+Integrations and support
+The demo supports webhook notifications for request-created and request-resolved events. Webhook secrets must be stored server-side and rotated every 90 days. Support requests should include a request ID, timestamp, and a short description of the issue. API keys must never be committed to source control.
