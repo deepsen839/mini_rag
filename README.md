@@ -208,3 +208,220 @@ The `/health` response reports whether tracing is configured; it does not expose
 - Re-indexing a file with the same `source` filename first removes its old points, then writes the new chunks. Use distinct source filenames if you intend to keep two separate versions.
 - `MIN_RELEVANCE_SCORE=0.18` is a starting threshold, not a universal value. Tune it using your evaluation questions and observed reranker scores.
 - Existing indexed points are not automatically deleted by this update. Re-upload/re-index a document to replace that source's points.
+
+- What is the purpose of malloc() in C?
+- malloc() is a standard library function used to dynamically allocate a block of memory at runtime. It returns a pointer to the allocated memory. If allocation fails, it returns NULL. The allocated memory should be released using free() when no longer needed.
+
+- Explain the five IPv4 address classes: A, B, C, D, and E.
+
+- What are the seven layers of the OSI model?
+
+The OSI model is organized into seven distinct layers (from the highest‑level application down to the physical transmission medium):
+
+Application
+Presentation
+Session
+Transport
+Network
+Data Link
+Physical
+
+what is calloc
+what is malloc
+What is the difference between TCP and UDP?
+
+
+
+# MiniRAG Project — Limits, Trade-offs, and Next Steps
+
+## 1. Current System Limitations
+
+The MiniRAG project uses document ingestion, embeddings, Qdrant vector search, hybrid retrieval, Cohere reranking, and Groq-powered answer generation.
+
+### A. Document Ingestion
+- Poor chunking can split important technical explanations across multiple chunks.
+- Large chunks may contain irrelevant information.
+- Small chunks may lose the context needed to answer a question.
+- Missing or incorrect page metadata can produce inaccurate citations.
+
+### B. Embedding and Vector Search
+- Dense retrieval may fail to retrieve exact technical terms, identifiers, IP addresses, or uncommon keywords.
+- Semantically similar chunks are not always factually relevant.
+- Retrieval quality depends heavily on the embedding model.
+- Changing the embedding model without re-indexing can make existing vectors incompatible.
+
+### C. Hybrid Retrieval
+- Combining dense retrieval and BM25 improves coverage but adds computational overhead.
+- Reciprocal Rank Fusion (RRF) depends on the quality of the individual rankings.
+- BM25 may struggle with semantic questions that use different wording from the source.
+- Loading all Qdrant documents into memory for BM25 is not scalable for large collections.
+
+### D. Reranking
+- Cohere reranking introduces additional latency and API cost.
+- Reranking cannot recover relevant documents that were never retrieved.
+- Poor-quality initial candidates can still produce poor final results.
+- API limits and network failures can affect reliability.
+
+### E. LLM Answer Generation
+- Groq generation can still produce unsupported statements if retrieved context is insufficient.
+- Long context increases token usage and latency.
+- Incorrect or incomplete retrieval can lead to hallucinations.
+- Citations may be incorrect unless they are explicitly validated against retrieved chunks.
+
+### F. Infrastructure and Performance
+- External embedding, reranking, and LLM APIs introduce network latency.
+- Qdrant Cloud performance depends on the deployment and available resources.
+- Free-tier services may have resource and usage limitations.
+- End-to-end latency can increase as retrieval and reranking stages become more complex.
+
+## 2. Key Trade-offs
+
+| Component | Current Approach | Advantage | Trade-off |
+|---|---|---|---|
+| Embeddings | Sentence Transformers / local embeddings | Lower recurring API cost | Local compute and memory requirements |
+| Vector database | Qdrant Cloud | Managed vector search | Network latency and service limits |
+| Keyword retrieval | BM25 | Better exact keyword matching | Additional indexing and computation |
+| Hybrid retrieval | Dense + BM25 + RRF | Better retrieval coverage | More complexity and latency |
+| Reranking | Cohere | Better candidate relevance | API cost and additional latency |
+| LLM | Groq | Fast inference | External API dependency and token limits |
+| Frontend | Streamlit / Gradio | Fast development | Less control over complex production UI |
+| Backend | FastAPI | API separation and scalability | Deployment and monitoring complexity |
+
+## 3. What Should Be Improved Next?
+
+### Priority 1 — Build a Retrieval Evaluation Dataset
+
+Create a dataset of 30–50 questions with:
+- Question
+- Expected answer
+- Expected source document
+- Expected page number
+- Relevant chunk IDs
+
+Include different question types:
+- Exact keyword questions: What is malloc?
+- Conceptual questions: Explain dynamic memory allocation.
+- Comparison questions: Difference between TCP and UDP.
+- Technical questions: What are the IPv4 address classes?
+- Multi-part questions requiring information from multiple chunks.
+
+**Why:** You need measurable evidence that retrieval improvements are actually working.
+
+### Priority 2 — Measure Retrieval Quality
+
+Evaluate the following metrics:
+
+| Metric | Purpose |
+|---|---|
+| Recall@5 | Whether relevant chunks appear in the top five |
+| Recall@10 | Whether relevant chunks appear in the top ten |
+| MRR | How highly the first relevant result is ranked |
+| nDCG@10 | Quality of the ranking across the top ten |
+| Precision@5 | How many retrieved chunks are relevant |
+
+Compare three retrieval approaches:
+
+1. Dense retrieval only.
+2. BM25 retrieval only.
+3. Hybrid retrieval using RRF.
+
+**Target:** Hybrid retrieval should improve retrieval quality without causing unacceptable latency.
+
+### Priority 3 — Improve Chunking
+
+Experiment with:
+- 300-token chunks.
+- 500-token chunks.
+- 700-token chunks.
+- 10–20% overlap.
+- Section-aware chunking.
+
+Preserve:
+- Document title.
+- Section heading.
+- Page number.
+- Source filename.
+- Chunk ID.
+
+Choose the configuration that produces the best evaluation results.
+
+### Priority 4 — Optimize Reranking
+
+Test:
+- Top 10 candidates.
+- Top 20 candidates.
+- Top 30 candidates.
+
+Measure:
+- Reranking latency.
+- Retrieval quality before reranking.
+- Retrieval quality after reranking.
+- API cost.
+
+Remember: reranking improves candidate ordering; it cannot find a relevant chunk that the retrieval stage missed.
+
+### Priority 5 — Add Grounding and Citation Validation
+
+Implement these checks:
+
+1. Generate answers only from retrieved context.
+2. Require citations for factual claims.
+3. Verify cited chunk IDs exist.
+4. Verify page numbers against document metadata.
+5. Return an insufficient-context response when evidence is unavailable.
+6. Avoid generating unsupported answers.
+
+### Priority 6 — Improve Performance and Scalability
+
+- Cache document embeddings and repeated queries where appropriate.
+- Avoid loading the entire Qdrant collection into memory for every retrieval operation.
+- Consider Qdrant sparse vectors or a dedicated BM25 index for larger datasets.
+- Use asynchronous API calls where appropriate.
+- Add timeouts and retries for external services.
+- Measure latency separately for embedding, retrieval, reranking, and generation.
+
+## 4. Recommended Evaluation Targets
+
+These are proposed engineering targets, not measured results.
+
+| Metric | Initial Target |
+|---|---:|
+| Recall@5 | ≥ 80% |
+| Recall@10 | ≥ 90% |
+| MRR | ≥ 0.70 |
+| Citation validity | ≥ 95% |
+| Grounded answer accuracy | ≥ 90% |
+| End-to-end response time | ≤ 2 seconds where feasible |
+
+Measure actual performance before claiming these targets have been achieved.
+
+## 5. Recommended Implementation Roadmap
+
+| Phase | Work | Priority |
+|---|---|---|
+| 1 | Build 30–50 question evaluation dataset | Critical |
+| 2 | Compare dense, BM25, and hybrid retrieval | Critical |
+| 3 | Optimize chunking and metadata | High |
+| 4 | Tune Cohere reranking | High |
+| 5 | Add answer grounding and citation validation | Critical |
+| 6 | Optimize latency and caching | High |
+| 7 | Add monitoring, logging, and error handling | Medium |
+| 8 | Deploy and run production-style tests | Medium |
+
+## 6. What I Recommend Doing Next
+
+Do not add more components yet. First establish whether your existing retrieval pipeline returns the correct evidence.
+
+**Recommended immediate task: Build a MiniRAG evaluation framework.**
+
+It should automatically:
+1. Load the 30–50 test questions.
+2. Query the MiniRAG API.
+3. Record retrieved chunks and their rankings.
+4. Compare retrieved chunks against expected relevant chunks.
+5. Calculate Recall@5, Recall@10, MRR, and nDCG@10.
+6. Measure end-to-end latency.
+7. Export results to CSV.
+8. Compare dense-only, BM25-only, and hybrid retrieval.
+
+**Final objective:** Turn MiniRAG from a working document chatbot into an evaluated, measurable, reliable RAG system.
