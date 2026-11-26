@@ -1,0 +1,39 @@
+id,question,status,source_supported,client_latency_ms,retrieved_chunk_count,citation_count,answer,answer_metrics,error
+Q1,What is the purpose of malloc() in C?,success,True,24707.15,3,3,"`malloc()` is the standard C library function used to obtain a block of dynamic memory.  
+You tell it how many bytes are needed; it allocates that amount of storage and returns the base address of the allocated chunk (as a `void *`) so the program can store data there — for example, to make a copy of a string read from the keyboard [1].","{""precision"": 0.1774, ""recall"": 0.5789, ""f1"": 0.2716}",
+Q2,"Explain the five IPv4 address classes: A, B, C, D, and E.",success,False,13373.38,3,3,"**IPv4 address classes**
+
+| Class | Leading bits (binary) | First‑byte range (decimal) | Number of networks (blocks) | Hosts per network (block size) | Typical use |
+|-------|-----------------------|----------------------------|-----------------------------|--------------------------------|--------------|
+| **A** | 0 xxxx xxxx | 0 – 127  (0 and 127 are reserved) | 128  networks | 16 777 216 addresses per network | Unicast – very large organizations |
+| **B** | 10 xxxx xxxx | 128 – 191 | 16 384  networks | 65 536 addresses per network | Unicast – medium‑sized organizations |
+| **C** | 110 xxxx xxxx | 192 – 223 | 2 097 152  networks | 256 addresses per network | Unicast – small networks |
+| **D** | 1110 xxxx xxxx | 224 – 239 | 1  block | 268 435 456 addresses (used as a single multicast range) | **Multicast** traffic |
+| **E** | 1111 xxxx xxxx | 240 – 255 | Reserved (future/experimental) | Not assigned for normal use | Reserved |
+
+*How to identify the class* – In dotted‑decimal notation the first octet alone tells the class; in binary the leading bits shown above immediately reveal it [1].  
+
+*Purpose* – Classes A, B, and C are for ordinary unicast addressing, differing only in how many hosts each network can contain. Class D addresses are reserved for multicast groups, and Class E addresses are set aside for experimental or future purposes [2].",null,
+Q3,What are the seven layers of the OSI model?,success,False,10670.3,3,3,"The OSI model is organized into seven distinct layers (from highest to lowest):
+
+1. **Application**  
+2. **Presentation**  
+3. **Session**  
+4. **Transport**  
+5. **Network**  
+6. **Data Link**  
+7. **Physical**  
+
+These seven layers are shown in the textbook’s diagram of the OSI model [1].",null,
+Q4,What is the difference between TCP and UDP?,success,False,9799.18,3,3,"**TCP vs. UDP**
+
+| Aspect | TCP (Transmission Control Protocol) | UDP (User Datagram Protocol) |
+|--------|--------------------------------------|------------------------------|
+| **Connection model** | Connection‑oriented – establishes a virtual connection before data transfer【1†L1-L4】 | Connectionless – sends independent datagrams without a setup phase【2†L1-L4】 |
+| **Reliability** | Reliable: provides flow control, error control, and retransmission (sliding‑window protocol)【2†L5-L9】 | Unreliable: only minimal error checking; lost or out‑of‑order packets are not recovered【2†L1-L4】 |
+| **Data handling** | Byte‑oriented stream; the transport layer treats data as a continuous sequence of bytes【1†L1-L4】 | Message‑oriented; each datagram is a distinct packet【2†L1-L4】 |
+| **Overhead** | Larger header with sequence numbers, acknowledgments, window size, etc. | Small header; only source/destination ports, length, checksum【2†L1-L4】 |
+| **Typical uses** | Applications needing guaranteed delivery (e.g., web, email, file transfer) | Applications tolerant of loss but needing low latency or multicast (e.g., DNS, TFTP, SNMP, streaming)【1†L5-L9】【1†L10-L13】 |
+
+In short, TCP adds connection‑oriented, reliable transport services on top of IP, while UDP offers a lightweight, connectionless service with minimal overhead and no built‑in reliability.",null,
+Q5,What is a pointer?,success,True,14276.34,3,3,"A pointer is a variable that holds the **address** of another variable (or array element) so that the value can be accessed indirectly. In C the address‑of operator `&` yields an address, which can be stored in a pointer variable (e.g., `int *n` in the example where `n` “contains the address of array element”) and the “value at address” operator `*` retrieves the value stored at that address【3†L1-L7】【2†L13-L18】.","{""precision"": 0.2027, ""recall"": 0.7143, ""f1"": 0.3158}",
